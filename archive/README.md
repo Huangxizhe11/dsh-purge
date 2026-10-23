@@ -20,3 +20,13 @@
 `1ea0671` 不同 —— 旧 SHA 只在本仓库里还能查到。
 
 用 `git log --all --oneline` 可以看到完整的旧线。
+
+## 社区兼容构建 / community build
+
+不是原作者发布线，但今天（2026-10-23）它先跑到了 **1.1.75**，比原作者仓库的 1.1.74 还新一个版本号：
+
+- 分支 `community-master` = [realMisakaMikoto/dsh-purge](https://github.com/realMisakaMikoto/dsh-purge) 的 `master`（`4a053a8`）
+- tag `community/v1.1.71` … `community/v1.1.75`
+- 五个 release 原包 + 校验和：`upstream-archive` 分支的 `upstream-archive/releases/community/`
+
+它的 `FORK-NOTES.md` 写得很清楚：只带 DSH 0.2.x 兼容补丁，设计、提示词、skills 都归原作者。

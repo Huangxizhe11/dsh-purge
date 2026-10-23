@@ -33,6 +33,8 @@
 | `master` | 上游 **v1.1.74**（2026-10-23 的 `5a9b8e1`）内容，逐文件对齐；另加本文件与 `archive/` |
 | `master` 历史 | 上游**被重写前**的完整旧线（回溯到早期版本，含 1.1.71 及以前全部提交），以 merge commit 并入 |
 | Tag（43 个） | `v1.1.73`、`v1.1.74`（作者重写后仍在线的两个）+ `archive/pr-<N>-head` / `-merge` 39 个（上游 `refs/pull/*` 的同 SHA 转换，GitHub 禁止推送隐藏 ref）+ 快照 tag `upstream-snapshot-6c1d638`、`pre-rewrite-1.1.71` |
+| 分支 `community-master` | 社区兼容构建 [realMisakaMikoto/dsh-purge](https://github.com/realMisakaMikoto/dsh-purge) 的 `master`（`4a053a8` = 1.1.75）；**不是原作者线**，对方 README 明写「not the upstream project」 |
+| Tag `community/v1.1.71` … `community/v1.1.75` | 上面那条社区线的 5 个 release tag，带命名空间避免与原作者线混淆 |
 | 分支 `upstream-archive` | **Issue / PR / 评论 / Release 制品快照**：112 个 issue + 36 个 PR + 258 条评论的原始 JSON、`issues-index.md` 可读索引、两个 release 原包 zip |
 | `archive/prompts/` | **破甲默认提示词 4 个版本的字节冻结档**（见下） |
 | `archive/skills-1.1.71/` | 23 个 redteam skill —— 上游 1.1.73 提交 `679a3db` 明确 "drop skills and knowledge base"，已从 master 消失 |
@@ -58,6 +60,7 @@
 | 2026-10-13 | 本仓库首次备份：上游 `master` = `6c1d638`（1.1.71 时代），完整历史 + 73 个原版 tag + 26 个 `archive/pr-*` tag |
 | 2026-10-23 前 | 上游删库风险兑现：**历史被重写**，`master` 只剩 6 个提交；`v1.1.73` tag 指向新的 `ca848d7`，与当年发布的 `1ea0671` 不同；1.1.71 及以前的 tag 全部消失 |
 | 2026-10-23 | 本仓库把上游 `5a9b8e1`（1.1.74）合并进 `master`，保留旧历史线；补推 tag；新增 `archive/` |
+| 2026-10-23 20:45 | 社区兼容构建 realMisakaMikoto 连发 v1.1.73/1.1.74/1.1.75，版本号首次**超过**原作者线（1.1.74） |
 | 2026-10-23 21:33 | 二次全量快照：拉齐上游全部 `refs/pull/*`（转 39 个 `archive/pr-*` tag）；新建 `upstream-archive` 分支存 issue / PR / 评论 / release 原包 |
 
 > 2026-10-13 那一批「73 个原版 tag + 26 个 `archive/pr-*` tag」的 ref 早已不在远端，
