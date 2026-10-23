@@ -30,6 +30,25 @@ issue、PR、评论与 release 制品快照。上游重写过历史、删过 tag
 96fd401bf0a04c1a7915f3e82419e16b763682e1419a94212fe79cb7b6dba78c  dsh-purge-1.1.74.zip
 ```
 
+
+## 社区兼容构建（非原作者项目）
+
+`releases/community/` 下是 **[realMisakaMikoto/dsh-purge](https://github.com/realMisakaMikoto/dsh-purge)**
+（MIT，2026-10-17 起，社区兼容构建，README 明确写「not the upstream project」）今天连发的
+v1.1.71 → **v1.1.75** 五个 release 原包。它比原作者仓库（1.1.74）**多一个版本号**，
+但它是社区兼容补丁线，不是原作者发布线，别搞混。
+
+| 文件 | 字节 | SHA256 |
+| --- | --- | --- |
+| `community/dsh-purge-1.1.71.zip` | 1,758,622 | `b5d66525…` |
+| `community/dsh-purge-1.1.72.zip` | 1,770,413 | `a8385e49…` |
+| `community/dsh-purge-1.1.73.zip` | 1,778,765 | `506bd8fa…` |
+| `community/dsh-purge-1.1.74.zip` | 1,781,200 | `467609b3…` |
+| `community/dsh-purge-1.1.75.zip` | 1,791,277 | `0cdc9268…` |
+
+配套 ref 已推成：分支 `community-master`（= 该仓库 `master`，`4a053a8`）、
+tag `community/v1.1.71` … `community/v1.1.75`（同名 tag 不与原作者线混用）。
+
 ## 复原上游仓库
 
 ```bash
@@ -38,6 +57,9 @@ cd dsh-purge-archive/upstream-archive && shasum -a 256 -c releases/SHA256SUMS.tx
 
 # 另一条线：master 分支 = 上游代码 + 被重写前的旧全量历史 + archive/ 破甲提示词冻结档
 cd .. && git checkout master && ls archive/prompts
+
+# 社区兼容构建（1.1.75 线）
+git checkout community-master && cat FORK-NOTES.md
 ```
 
 ## 署名
