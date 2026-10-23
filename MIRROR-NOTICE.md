@@ -1,7 +1,9 @@
 # 镜像说明 / Mirror Notice
 
-本仓库是 **[YuJunZhiXue/dsh-purge](https://github.com/YuJunZhiXue/dsh-purge)** 的**全量镜像（mirror）**，
-由 [@mmparko](https://github.com/mmparko) 在上游宣布删库前完整备份，用于存档与分发。
+本仓库是 **[YuJunZhiXue/dsh-purge](https://github.com/YuJunZhiXue/dsh-purge)** 的**存档镜像（mirror）**，
+由 [@mmparko](https://github.com/mmparko) 在上游宣布删库前备份，用于存档与分发。
+上游此后**重写过 Git 历史、删掉过 tag、并把若干文件从发布版里摘除**，因此本仓库同时承担
+「当前版本镜像」与「被删内容留档」两个职责。
 
 ---
 
@@ -12,10 +14,10 @@
 | 原项目 | **dsh-purge — DeepSeek Harness 破甲**（让所有模型都能破甲，不同模型可换不同提示词） |
 | 原作者 | **YuJunZhiXue**（[@YuJunZhiXue](https://github.com/YuJunZhiXue)） |
 | 原仓库 | <https://github.com/YuJunZhiXue/dsh-purge> |
-| 原许可证 | MIT License（本仓库 `LICENSE` 原样保留，未做任何改动） |
+| 原许可证 | Apache-2.0（`LICENSE` / `NOTICE` 原样保留，未做改动） |
 
 **本项目的名称、思路、代码、提示词的一切权利与署名均归原作者。**
-本镜像不主张任何原创性，仅承担存档与分发职责，未对原作者内容做任何修改或再授权。
+本镜像不主张任何原创性，仅承担存档与分发职责，未对原作者内容做再授权。
 
 按原 README「[署名要求](https://github.com/YuJunZhiXue/dsh-purge#署名要求)」章节的明确要求：
 **借用本项目的名称、思路、代码或提示词，必须署名，并写明来源仓库。** 任何基于本镜像的二开、
@@ -24,82 +26,69 @@
 
 ---
 
-## 二、备份内容 / What's included
+## 二、本仓库现在有什么 / What's here
 
-| 项目 | 内容 |
+| 位置 | 内容 |
 | --- | --- |
-| 分支 | `master`、`fix/restart-sticky` |
-| 原版 Tag | 73 个：`v1.1.1` … `v1.1.71`（含各 `-beta.N` 预发布）+ `restore-issue-25` |
-| PR 归档 Tag | 26 个：`archive/pr-<N>-head`、`archive/pr-<N>-merge` |
-| 上游快照 Tag | `upstream-snapshot-6c1d638` — 备份时刻上游 `master` 的原始 commit |
-| Issue/PR 存档 | 分支 `upstream-archive`：`upstream-archive/` 目录下的 JSON 与可读摘要 |
-| Issue 规模 | 91 个 issue + 24 个 PR，共 135 条评论 |
+| `master` | 上游 **v1.1.74**（2026-10-23 的 `5a9b8e1`）内容，逐文件对齐；另加本文件与 `archive/` |
+| `master` 历史 | 上游**被重写前**的完整旧线（回溯到早期版本，含 1.1.71 及以前全部提交），以 merge commit 并入 |
+| Tag | `v1.1.73`、`v1.1.74`（作者重写后仍在线的两个；旧 tag 已被作者删除） |
+| `archive/prompts/` | **破甲默认提示词 4 个版本的字节冻结档**（见下） |
+| `archive/skills-1.1.71/` | 23 个 redteam skill —— 上游 1.1.73 提交 `679a3db` 明确 "drop skills and knowledge base"，已从 master 消失 |
+| `archive/audit/` | 2026-10-23 对 `v1.1.73` 的静态审计报告（82 处补丁位点、沙箱/审批关闭清单、无后门结论） |
 
-> 说明：GitHub 禁止向 `refs/pull/*` 推送（`deny updating a hidden ref`），
-> 因此上游的 26 个 PR ref 已转换为同 SHA 的 `archive/pr-*` tag，commit 对象一个不少。
+### 破甲提示词存档（`archive/prompts/`）
 
-### 相对上游的唯一差异
+| 目录 | 来源 | 字节 |
+| --- | --- | --- |
+| `v1.1.74/` | tag `v1.1.74` | 25727 (zh) / 29427 (en) |
+| `v1.1.73/` | tag `v1.1.73`，与当年发布的 `1ea0671` 字节一致 | 25624 / 29373 |
+| `v1.1.73-bak/` | 上游遗留 `lib/default-prompt-inject.md.bak` | 24455 |
+| `installed-2026-10-23/` | 本机 `~/.dsh/prompt-inject.md`，apply 1.1.73 后真正在跑的那份 | 25127 |
 
-`master` 比上游 `master` **多一个 commit**，即本文件 `MIRROR-NOTICE.md`。
-上游原始内容本身零改动，可通过 `upstream-snapshot-6c1d638` 拿到，diff 命令见第四节。
+四份互不相同，`SHA256SUMS.txt` 可整体校验。详见 [`archive/prompts/README.md`](archive/prompts/README.md)。
 
 ---
 
-## 三、备份记录 / Capture record
+## 三、上游被改写的时间线 / What the author changed
 
-- 备份时间：2026-10-13
-- 上游 `master`：`6c1d638d1bdcc45ede50fc30249c753d58122a51`
-- 上游 `fix/restart-sticky`：`1f5c2ff6e29346ff1b2b6a4f7b8faa7fa431eac4`
-- 最新原版 tag `v1.1.71`：`5e757260a0be055892b48ec520d451cc82e1c191`
-- 备份时刻上游星标 **4,995**、fork **612**
-- 上游仓库元数据、issues、PR、评论、标签的完整 JSON 见 `upstream-archive` 分支
-- 上游 Wiki：未启用（`*.wiki.git` 返回 `Repository not found`），无内容可备份
-
-### 完整性校验结果（备份时刻实跑）
-
-| 校验项 | 结果 |
+| 时间 | 事件 |
 | --- | --- |
-| ref 逐条 SHA 比对 | **101 / 101 完全一致**，0 缺失、0 差异 |
-| `master` 源码包 SHA256 | 上游与镜像**逐字节相同**：`4acda024330d43b7beaf220f308e10eb27cf253fd4135942e3e5930b1dace106` |
-| 文件级 blob SHA | **121 / 121 完全一致**（Github Trees API recursive 比对） |
-| `git fsck --full` | 通过，无损坏、无悬挂对象缺失 |
+| 2026-10-13 | 本仓库首次备份：上游 `master` = `6c1d638`（1.1.71 时代），完整历史 + 73 个原版 tag + 26 个 `archive/pr-*` tag |
+| 2026-10-23 前 | 上游删库风险兑现：**历史被重写**，`master` 只剩 6 个提交；`v1.1.73` tag 指向新的 `ca848d7`，与当年发布的 `1ea0671` 不同；1.1.71 及以前的 tag 全部消失 |
+| 2026-10-23 | 本仓库把上游 `5a9b8e1`（1.1.74）合并进 `master`，保留旧历史线；补推 tag；新增 `archive/` |
+
+> 旧 tag / `archive/pr-*` 的 ref 已在上游与本仓库远端消失，对应 commit 能否再取回取决于
+> GitHub 的 GC 状态。**旧 `master` 线本身是完整的**，因此旧版源码仍可通过
+> `git log --all` 与 `git checkout <old-sha>` 取回。
+> 当前远端实际只有 1 个分支（`master`）与 2 个 tag —— 与本文早期版本里「99 个 tag」的自述不符，
+> 那一批 ref 已不可用，此处据实更正。
 
 ---
 
 ## 四、自行校验 / Verify
 
 ```bash
-git clone https://github.com/mmparko/dsh-purge.git
+git clone https://github.com/Huangxizhe11/dsh-purge.git
 cd dsh-purge
 
-# 1. 备份时刻的上游原始状态
-git log --oneline -1 upstream-snapshot-6c1d638
-#    → 6c1d638 上游 master 原样
+# 1. 破甲提示词逐字节校验
+cd archive/prompts && shasum -a 256 -c SHA256SUMS.txt
 
-# 2. 本镜像与上游原始状态的差异（应只有 MIRROR-NOTICE.md 一个文件）
-git diff --stat upstream-snapshot-6c1d638 master
+# 2. 本镜像与上游当前 master 的差异（应只有 MIRROR-NOTICE.md 与 archive/）
+git remote add upstream https://github.com/YuJunZhiXue/dsh-purge.git
+git fetch upstream --tags
+git diff --stat upstream/master master
 
-# 3. 分支与 tag 清点
-git branch -a            # master / fix/restart-sticky
-git tag | wc -l          # 99 = 73 原版 + 26 PR 归档
-git tag | grep '^archive/pr-'
-
-# 4. 对照上游快照做一次完整 hash 校验
-git rev-parse master^{tree}
-git rev-parse upstream-snapshot-6c1d638^{tree}
-```
-
-```bash
-# 5. 与上游（若仍在线）逐 ref 比对
-git ls-remote https://github.com/YuJunZhiXue/dsh-purge.git | sort > /tmp/up.txt
-git ls-remote https://github.com/mmparko/dsh-purge.git | sort > /tmp/mine.txt
-diff /tmp/up.txt /tmp/mine.txt
+# 3. 旧历史是否还在
+git log --all --oneline | tail -5
+git log --oneline --follow lib/default-prompt-inject.zh.md | tail -3
 ```
 
 ---
 
 ## 五、上游 README 中的原生状态说明（保留告知）
 
-上游 README 在备份时载明：**项目暂停更新**，作者因工作安排暂停维护、不再发版、暂不收
+上游 README 曾载明：**项目暂停更新**，作者因工作安排暂停维护、不再发版、暂不收
 issue / PR，也不保证跟进新版 dsh；仓库仍可自用。该状态与「违规商用公示」章节一并完整保留在
 `README.md` / `README.zh-CN.md` 中，本镜像不修改其任何字句。
