@@ -575,3 +575,20 @@ flowchart LR
 ---
 
 感谢 [LINUX DO](https://linux.do) 社区
+
+## 命令行状态与体检
+
+```sh
+node bin/dsh-purge.js --status --json
+node bin/dsh-purge.js --status --surface web
+node bin/dsh-purge.js --status --base /path/to/node_modules/@deepseek-ai
+node bin/dsh-purge.js --doctor --json
+node bin/dsh-purge.js --doctor --save-baseline
+node bin/dsh-purge.js --doctor --repo /path/to/linked/checkout --json
+```
+
+状态会列出各份安装；只有未指定平台或目录时，才优先选择实际运行的桌面宿主。桌面检查包含归档和补丁生效状态。
+
+doctor 全部检查通过时退出码为 0，否则为 1。只有健康状态可以保存基线，并记录宿主路径以避免混用不同安装的基线。`--repo` 用于链接到工作副本的开发安装；包缺失、链接失效或独立复制目录都不会通过该检查。
+
+`--json` 仅支持状态和体检命令。与应用、还原、编辑或卸载操作组合时会报错，不执行该操作。

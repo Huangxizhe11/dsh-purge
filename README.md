@@ -566,3 +566,20 @@ What changed, and the zip, are on [Releases](https://github.com/realMisakaMikoto
 ---
 
 Thanks to the [LINUX DO](https://linux.do) community
+
+## CLI status and doctor
+
+```sh
+node bin/dsh-purge.js --status --json
+node bin/dsh-purge.js --status --surface web
+node bin/dsh-purge.js --status --base /path/to/node_modules/@deepseek-ai
+node bin/dsh-purge.js --doctor --json
+node bin/dsh-purge.js --doctor --save-baseline
+node bin/dsh-purge.js --doctor --repo /path/to/linked/checkout --json
+```
+
+Status lists each installation and chooses an actually running desktop only when the caller has not pinned a surface or base. Desktop reports include the sealed-archive and activation checks.
+
+Doctor exits 0 only for a healthy host and 1 for a failed check. Saving a baseline requires a healthy host; the saved host path prevents comparing different installations. Use `--repo` for development installations that resolve to that checkout. A missing package or an independent copy fails that explicit checkout check.
+
+`--json` is supported for status and doctor only. Combining it with Apply, Revert, Edit, or Uninstall is rejected without performing that operation.

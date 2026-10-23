@@ -2,8 +2,37 @@
 
 import * as core from "../lib/core.js";
 import * as rules from "../lib/rules.js";
+import * as doctor from "../lib/doctor.js";
+import path from "node:path";
+import { createRequire } from "node:module";
 
 const args = process.argv.slice(2);
+
+function argValue(name) {
+  const eq = args.find((a) => a.startsWith(name + "="));
+  if (eq) return eq.slice(name.length + 1);
+  const i = args.indexOf(name);
+  if (i >= 0 && args[i + 1] && !args[i + 1].startsWith("--")) return args[i + 1];
+  return "";
+}
+
+function printHosts(hosts) {
+  if (!hosts || hosts.length <= 1) return;
+  const out = ["", `  宿主清单 / hosts (${hosts.length})`];
+  for (const h of hosts) {
+    const flags = [];
+    if (h.is_primary) flags.push("primary");
+    if (h.running_app) flags.push("当前桌面应用 / running app");
+    if (h.desktop_install) flags.push("desktop");
+    out.push(`    · ${h.ai_base}`);
+    out.push(
+      `      ${h.applied}/${h.total} 已清洗, ${h.pending} 待清洗, ${h.na} 不适用, ${h.skipped} skipped` +
+        (flags.length ? `  [${flags.join(", ")}]` : "") +
+        (h.has_backup ? "  backup=yes" : ""),
+    );
+  }
+  return out.join("\n");
+}
 
 function printStatus(state) {
   const out = [];
@@ -26,32 +55,93 @@ function printStatus(state) {
   out.push(`  注入文件       ${state.override_path}`);
   out.push(`  注入状态       ${state.override_status}`);
   out.push("");
-  out.push(`  补丁 ${state.patches_applied}/${core.ALL_PATCHES.length} 已清洗, ${state.patches_pending} 待清洗`);
+  out.push(`  补丁 ${state.patches_applied}/${state.patches_total ?? core.ALL_PATCHES.length} 已清洗, ${state.patches_pending} 待清洗, ${state.patches_na} 不适用, ${state.patches_skipped} 其他`);
   for (const p of core.ALL_PATCHES) {
-    const s = state.patch_status[p.id];
+    const s = state.patch_status[p.id] || "-";
     const mark = s === "applied" ? "✓" : s === "pending" ? "✗" : "·";
     out.push(`    ${mark} [#${String(p.id).padEnd(2)}] ${p.name.padEnd(30)} ${p.layer}/${p.layer_en} — ${s}`);
   }
   out.push("");
   out.push(`  shim: dsh.cmd=${state.shim_cmd}  dsh.ps1=${state.shim_ps1}  dsh=${state.shim_bin}`);
+  const hosts = printHosts(state.hosts);
+  if (hosts) out.push(hosts);
   return out.join("\n");
 }
 
 async function main() {
-  const mode = args.find((a) => ["--apply", "--revert", "--uninstall", "--status", "--edit", "--help"].includes(a));
+  const mode = args.find((a) => ["--apply", "--revert", "--uninstall", "--status", "--doctor", "--edit", "--help"].includes(a));
+  const wantBase = argValue("--base");
+  const wantSurface = argValue("--surface");
+  const wantRepo = argValue("--repo");
+  const wantJson = args.includes("--json");
+  const saveBaseline = args.includes("--save-baseline");
 
   if (mode === "--help" || args.includes("-h")) {
     console.log(`dsh-purge 用法:
-  dsh-purge --status     显示状态
-  dsh-purge --apply      应用全部清洗（提示词+代码+shim+override）
-  dsh-purge --revert     回滚还原
-  dsh-purge --uninstall  卸载插件（已应用则先还原）
-  dsh-purge --edit       编辑注入文件 prompt-inject.md
-  dsh-purge --help       帮助`);
+  dsh-purge --status            显示状态（含多宿主清单）
+  dsh-purge --status --base DIR  只报告指定 @deepseek-ai 目录
+  dsh-purge --status --json      Read-only JSON status
+  dsh-purge --doctor            Read-only health checks; exit 1 on failure
+  dsh-purge --doctor --json      JSON health checks, with state and check rows
+  dsh-purge --doctor --repo DIR  Verify installed packages resolve to this checkout
+  dsh-purge --doctor --save-baseline  Save a healthy host baseline
+  dsh-purge --surface desktop   强制按桌面宿主解析（默认自动判断）
+  dsh-purge --apply             应用全部清洗（提示词+代码+shim+override）
+  dsh-purge --revert            回滚还原
+  dsh-purge --uninstall         卸载插件（已应用则先还原）
+  dsh-purge --edit              编辑注入文件 prompt-inject.md
+  dsh-purge --help              帮助`);
     return;
   }
 
-  const state = await core.gatherState();
+  if (wantJson && mode && !["--status", "--doctor"].includes(mode)) {
+    console.log(JSON.stringify({ ok: false, error: "--json is supported only for --status and --doctor" }));
+    process.exitCode = 2;
+    return;
+  }
+  for (const name of ["--base", "--surface", "--repo"]) {
+    if (args.some((arg) => arg === name || arg.startsWith(name + "=")) && !argValue(name)) {
+      throw new Error(`${name} requires a value`);
+    }
+  }
+  if (wantSurface && !["web", "desktop"].includes(wantSurface)) throw new Error("--surface must be web or desktop");
+  if (mode !== "--doctor" && (wantRepo || saveBaseline)) throw new Error("--repo and --save-baseline require --doctor");
+
+  // Explicit caller choices must take precedence over automatic running-host selection.
+  if (wantSurface) process.env.DSH_SURFACE = wantSurface;
+  if (wantBase) process.env.DSH_BASE = wantBase;
+
+  const state = await core.gatherState({ base: wantBase, surface: wantSurface, hosts: true, discover: true });
+
+  if (mode === "--doctor") {
+    const home = state.dsh_home;
+    const linkPaths = [];
+    if (wantRepo) {
+      linkPaths.push(path.join(home, "plugins", "dsh-purge"));
+      const profile = state.surface === "desktop" ? "desktop" : "web";
+      const profileFile = path.join(home, "profiles", profile, "package.json");
+      let installed = path.join(path.dirname(profileFile), "node_modules", "dsh-purge");
+      try { installed = path.dirname(createRequire(profileFile).resolve("dsh-purge/package.json")); } catch { /* Report the missing installation. */ }
+      linkPaths.push(installed);
+    }
+    const baseline = saveBaseline ? null : doctor.readBaseline(home);
+    const result = doctor.runChecks({ state, repo: wantRepo, linkPaths, baseline });
+    let baselineSaved = null;
+    if (saveBaseline && result.ok) {
+      baselineSaved = doctor.writeBaseline(home, { ai_base: state.ai_base, surface: state.surface, applied: state.patches_applied });
+    }
+    if (wantJson) console.log(JSON.stringify({ ...result, state, baseline_saved: baselineSaved }, null, 2));
+    else {
+      for (const row of result.rows) console.log(`${row.ok ? "[OK]" : "[FAIL]"} ${row.id}: ${row.detail}`);
+      if (baselineSaved) console.log(`Baseline saved: ${baselineSaved}`);
+    }
+    process.exitCode = result.ok ? 0 : 1;
+    return;
+  }
+  if (wantJson) {
+    console.log(JSON.stringify(state, null, 2));
+    return;
+  }
   console.log(printStatus(state));
   console.log("");
 

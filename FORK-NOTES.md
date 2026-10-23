@@ -138,3 +138,11 @@ Validation: `node scripts/check-evidence-rewind.mjs` covers ten evidence/rewind 
 A patched resources/app directory is not proof that the running desktop has switched away from app.asar. Status now exposes patches_active and activation_pending; the UI keeps the warning visible for a located extraction. Sealed hosts cannot be accepted by hostCleanEnoughToKeep. Apply replies report restart_required without claiming an unstarted restart or swap.
 
 Regression: node scripts/check-desktop-activation.mjs (temporary files only; no live installation writes).
+
+## Multi-host CLI status and doctor
+
+The original multi-host status and doctor implementation was contributed by [@Heaven-Heart](https://github.com/Heaven-Heart) in [PR #1](https://github.com/realMisakaMikoto/dsh-purge/pull/1). Both original authored commits are retained when merging this contribution.
+
+Maintainer follow-up connects doctor to the CLI, validates health/exit codes and baseline writes, propagates the selected surface through all status checks, respects explicit selection, identifies only running installations, and handles copied/missing installations and relative symlinks. The 1.1.74 activation verification and prior runtime fixes remain in place.
+
+Regression: `node scripts/check-status-doctor.mjs` (temporary host and CLI fixtures); the Release checks run it alongside the desktop activation regression.
