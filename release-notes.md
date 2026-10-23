@@ -1,3 +1,23 @@
+# 1.1.75
+
+## 中文
+
+- 新增多宿主状态：分别显示 web 和桌面安装的补丁状态，根据实际运行的桌面进程选择默认宿主，并尊重 `--base` / `--surface` 显式指定。
+- 新增 `--status --json` 和 `--doctor [--json]`：检查补丁激活、备份、启动脚本及 ASAR 状态；体检成功退出码为 0，失败为 1。
+- 新增健康基线 `--doctor --save-baseline` 和开发安装链接检查 `--doctor --repo DIR`。基线只在体检通过后保存，并绑定对应宿主。
+- 修复宿主面别未传递到补丁 / ASAR 检查、将已安装误判为正在运行、链接缺失或复制目录误报成功、相对符号链接解析错误等问题。
+- 明确拒绝 `--json` 与 Apply / Revert / Edit / Uninstall 混用，避免命令被静默跳过；保留 1.1.74 桌面真实激活判定。
+- 发布检查新增多宿主 / doctor 回归，覆盖 JSON、基线、进程识别和目录链接。
+- 感谢 [@Heaven-Heart](https://github.com/Heaven-Heart) 在 [PR #1](https://github.com/realMisakaMikoto/dsh-purge/pull/1) 贡献多宿主状态和 doctor 的原始实现；已保留其两条原始作者提交。
+
+## English
+
+- Add per-installation web/desktop status, real running-desktop detection, and explicit `--base` / `--surface` selection.
+- Add structured `--status --json`, wired `--doctor [--json]` health checks with meaningful exit codes, healthy-only baselines, and checkout-link verification.
+- Fix surface propagation, installed-versus-running detection, missing/copied package checks, relative symlink resolution, and JSON action handling while retaining desktop activation checks.
+- Run multi-host and doctor regression fixtures in the Release workflow.
+- Thanks to [@Heaven-Heart](https://github.com/Heaven-Heart) for the original contribution in [PR #1](https://github.com/realMisakaMikoto/dsh-purge/pull/1); both authored commits remain in history.
+
 # 1.1.74
 
 - Fix desktop activation reporting: written patches and zero pending items no longer imply that the running host is patched.
