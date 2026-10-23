@@ -32,7 +32,8 @@
 | --- | --- |
 | `master` | 上游 **v1.1.74**（2026-10-23 的 `5a9b8e1`）内容，逐文件对齐；另加本文件与 `archive/` |
 | `master` 历史 | 上游**被重写前**的完整旧线（回溯到早期版本，含 1.1.71 及以前全部提交），以 merge commit 并入 |
-| Tag | `v1.1.73`、`v1.1.74`（作者重写后仍在线的两个；旧 tag 已被作者删除） |
+| Tag（43 个） | `v1.1.73`、`v1.1.74`（作者重写后仍在线的两个）+ `archive/pr-<N>-head` / `-merge` 39 个（上游 `refs/pull/*` 的同 SHA 转换，GitHub 禁止推送隐藏 ref）+ 快照 tag `upstream-snapshot-6c1d638`、`pre-rewrite-1.1.71` |
+| 分支 `upstream-archive` | **Issue / PR / 评论 / Release 制品快照**：112 个 issue + 36 个 PR + 258 条评论的原始 JSON、`issues-index.md` 可读索引、两个 release 原包 zip |
 | `archive/prompts/` | **破甲默认提示词 4 个版本的字节冻结档**（见下） |
 | `archive/skills-1.1.71/` | 23 个 redteam skill —— 上游 1.1.73 提交 `679a3db` 明确 "drop skills and knowledge base"，已从 master 消失 |
 | `archive/audit/` | 2026-10-23 对 `v1.1.73` 的静态审计报告（82 处补丁位点、沙箱/审批关闭清单、无后门结论） |
@@ -57,12 +58,13 @@
 | 2026-10-13 | 本仓库首次备份：上游 `master` = `6c1d638`（1.1.71 时代），完整历史 + 73 个原版 tag + 26 个 `archive/pr-*` tag |
 | 2026-10-23 前 | 上游删库风险兑现：**历史被重写**，`master` 只剩 6 个提交；`v1.1.73` tag 指向新的 `ca848d7`，与当年发布的 `1ea0671` 不同；1.1.71 及以前的 tag 全部消失 |
 | 2026-10-23 | 本仓库把上游 `5a9b8e1`（1.1.74）合并进 `master`，保留旧历史线；补推 tag；新增 `archive/` |
+| 2026-10-23 21:33 | 二次全量快照：拉齐上游全部 `refs/pull/*`（转 39 个 `archive/pr-*` tag）；新建 `upstream-archive` 分支存 issue / PR / 评论 / release 原包 |
 
-> 旧 tag / `archive/pr-*` 的 ref 已在上游与本仓库远端消失，对应 commit 能否再取回取决于
-> GitHub 的 GC 状态。**旧 `master` 线本身是完整的**，因此旧版源码仍可通过
-> `git log --all` 与 `git checkout <old-sha>` 取回。
-> 当前远端实际只有 1 个分支（`master`）与 2 个 tag —— 与本文早期版本里「99 个 tag」的自述不符，
-> 那一批 ref 已不可用，此处据实更正。
+> 2026-10-13 那一批「73 个原版 tag + 26 个 `archive/pr-*` tag」的 ref 早已不在远端，
+> 对应 commit 能否取回取决于 GitHub 的 GC 状态；**但旧 `master` 线本身完整**，旧版源码仍可
+> `git log --all` / `git checkout <old-sha>` 取回。
+> 2026-10-23 21:33 这次是按上游**当前实际在线**的 ref 重新做了一遍：只拉到 39 个 `refs/pull/*`，
+> 已全部转成 `archive/pr-*` tag 归档。
 
 ---
 
@@ -80,7 +82,13 @@ git remote add upstream https://github.com/YuJunZhiXue/dsh-purge.git
 git fetch upstream --tags
 git diff --stat upstream/master master
 
-# 3. 旧历史是否还在
+# 3. ref 清点（应为 2 个分支 + 43 个 tag）
+git ls-remote --heads --tags origin | wc -l
+
+# 4. Release 原包校验
+git checkout upstream-archive && cd upstream-archive && shasum -a 256 -c releases/SHA256SUMS.txt
+
+# 5. 旧历史是否还在
 git log --all --oneline | tail -5
 git log --oneline --follow lib/default-prompt-inject.zh.md | tail -3
 ```
